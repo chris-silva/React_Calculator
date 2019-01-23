@@ -244,9 +244,9 @@ class App extends React.Component {
       <div style={{width: '160px', height: '40px', textAlign: 'right', color: 'white', backgroundColor: 'black', paddingRight: '5%', marginTop: '5%'}}>
       <p> {this.state.trueValue === '' ? this.state.displayValue : this.state.trueValue} </p>
       <p>{
-        
+      /*  
         this.state.processedStringArray.map(x => x)
-       
+       */
         }</p>
       </div>
       
