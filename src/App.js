@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
-//import Button from './components/Button'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
 class App extends React.Component {
@@ -13,23 +11,16 @@ class App extends React.Component {
       processedValue : '',
       numbers : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
       processedStringArray : [],
-      //list: [1, 2, 3],
-      //operators : [ "+", "-", '*', '/', '='],
+      
       clear : "AC",
-      //backspace : "&larr;",
+      
       period : ".",
       finalValue : null,
-      twoOpinArow : false
+      twoOpinArow : false,
+      hasPeriod: false
     };
-    //this.buildNum2 = this.buildNum2.bind(this);
+    
   }
-
-  //displayValueFunc = () => { return this.state.displayValue === '' ? '0' : this.state.displayValue;}
-/*
-  buildNum2(x) { this.setState({ displayValue : this.state.displayValue + x }); 
-  console.log("hello")
-  }
-*/
 
   deleteLastDigit = () => {
     this.setState({
@@ -45,8 +36,6 @@ class App extends React.Component {
       twoOpinArow : false
       
     });
-    //https://reactjs.org/docs/faq-state.html
-    //console.log('displayValue:' + this.state.displayValue);
   }
 
   clearEverything = () => {
@@ -59,13 +48,14 @@ class App extends React.Component {
   attachPeriod = () => {
      if(!this.state.trueValue.includes('.'))
      { 
-       this.setState({trueValue : this.state.trueValue + '.' }) 
+       this.setState({
+         trueValue : this.state.trueValue + '.',
+         hasPeriod : true 
+        }) 
      }
   }
 
   attachOperation = (operation) => {
-
-    //console.log(this.state.trueValue);
     switch (operation)
     {
         case String.fromCharCode(215) : //multiplication
@@ -81,17 +71,14 @@ class App extends React.Component {
         operation = '+'
         break;
     }
-    ///////////////////////////////
-    
+   
        if ( this.state.displayValue == '0')
         {
           if (operation != '-')
           {
-            console.log("hello5");
-           this.setState({
+            this.setState({
             processedStringArray : this.state.processedStringArray.concat('0', operation)
            })
-           //return false;
           }
         }
         else if ( this.state.displayValue ===  "Division by zero" ) { }
@@ -112,54 +99,27 @@ class App extends React.Component {
           }
           else if ( this.state.trueValue == "" && operation == '-' )
           {
-            console.log("this.state.trueValue " + this.state.trueValue);
-          let myarray = [operation];
-          this.setState({
-          
-          //trueValue : '',
-          trueValue : '-' + this.state.trueValue,
-          twoOpinArow : true
-          //displayValue : '-',
-          //processedStringArray : this.state.processedStringArray.concat(myarray)
+            //let myarray = [operation];
+            this.setState({
+            trueValue : '-' + this.state.trueValue,
+            twoOpinArow : true
             })
           }
         }
         else
         {
-          console.log("up");
           if ( this.state.trueValue != '-' )
           {
-          //let tempArray = [ this.state.processedStringArray[0], operation ];
-          let tempArray = [...this.state.processedStringArray];
-          //tempArray = tempArray.pop();
-          console.log( tempArray[0] + tempArray[1]);
-          tempArray.splice( tempArray.length - 1, 1);
-          tempArray = [...tempArray, operation];
-          //console.log( tempArray[0] + tempArray[1]);
-          this.setState({
-            //processedStringArray : this.state.processedStringArray.splice(this.state.processedStringArray.length-1, 1)
+            let tempArray = [...this.state.processedStringArray];
+            tempArray.splice( tempArray.length - 1, 1);
+            tempArray = [...tempArray, operation];
+
+            this.setState({
             processedStringArray : tempArray
-          });
+            });
           }
         }
-        /*
-        
-        */
-    ///////////////////////////////
-
-    /* //was working
-    let myarray = [this.state.trueValue, operation]  
-    this.setState({
-      //processedValue : this.state.trueValue,
-      trueValue : '',
-      displayValue : '0',
-      processedStringArray : this.state.processedStringArray.concat(myarray)
-    })
-    */
-
-    //console.log(this.state.processedStringArray[0] + " " + this.state.processedStringArray[1]);
-  }
-
+      }
   countDecimals = (arrayWithDecimals) => {
     let value = null;
     let max = 0;
@@ -171,8 +131,9 @@ class App extends React.Component {
 		  {
 			  if ((value % 1) != 0)
 			  {	
+
 			  	value = value.toString().split(".")[1].length;
-			  	console.log("decimal: " + value);
+			  	
 				  if ( value >= max ) { max = value; }
 			  }
 		  }
@@ -183,14 +144,6 @@ class App extends React.Component {
   getResult = () => {
     let result = null;
     let numberOfDecimals = this.countDecimals(this.state.processedStringArray);
-/*
-    this.setState({
-      processedStringArray : this.state.processedStringArray.concat(this.state.trueValue)
-    })
-*/
-    //console.log(this.state.processedStringArray[0] + " " + this.state.processedStringArray[1] + " " + this.state.processedStringArray[2] );
-    //console.log("this.state.trueValue : " + this.state.trueValue);
-
     
     if ( this.state.displayValue === "Division by zero" )
     {
@@ -200,18 +153,32 @@ class App extends React.Component {
     //input: number, operation, no input
     else if ( this.state.trueValue === "" )
     {
-      result = eval(this.state.processedStringArray.concat("0").join(" ") );
-      result = result.toFixed(numberOfDecimals);
-      result = "" + result; 
+      if (this.state.hasPeriod)
+      {
+        result = eval(this.state.processedStringArray.concat("0").join(" ") );
+        result = result.toFixed(numberOfDecimals);
+        result = "" + result;
+      }
+      else
+      {
+        result = eval(this.state.processedStringArray.concat("0").join(" ") );
+        result = "" + result;
+      } 
     }
     else
-    { 
-      result = eval(this.state.processedStringArray.concat(this.state.trueValue).join(" ") );
-      result = result.toFixed(numberOfDecimals);
-      result = "" + result;
+    {
+      if (this.state.hasPeriod)
+      {
+        result = eval(this.state.processedStringArray.concat(this.state.trueValue).join(" ") );
+        result = result.toFixed(numberOfDecimals);
+        result = "" + result;
+      }
+      else
+      {
+        result = eval(this.state.processedStringArray.concat(this.state.trueValue).join(" ") );
+        result = "" + result;
+      }
     }
-    //console.log(this.state.processedStringArray.concat(this.state.trueValue));
-    //console.log(result);
 
     //result produced by division by zero
     if ( !isFinite(result) )
@@ -220,18 +187,19 @@ class App extends React.Component {
         displayValue : "Division by zero",
         trueValue : "",
         processedStringArray : [],
-        twoOpinArow : true
+        twoOpinArow : true,
+
+        hasPeriod : false
       })
     }
     else
     {
     this.setState ({
-
-        //processedStringArray : this.state.processedStringArray.concat(this.state.displayValue),
-       displayValue : result,
-        //displayValue: eval(this.state.processedStringArray),
+        displayValue : result,
         trueValue : "" + result,
-        processedStringArray : []
+        processedStringArray : [],
+
+        hasPeriod : false
       })
    }
   }
@@ -243,17 +211,10 @@ class App extends React.Component {
 
       <div style={{width: '160px', height: '40px', textAlign: 'right', color: 'white', backgroundColor: 'black', paddingRight: '5%', marginTop: '5%'}}>
       <p> {this.state.trueValue === '' ? this.state.displayValue : this.state.trueValue} </p>
-      <p>{
-      /*  
-        this.state.processedStringArray.map(x => x)
-       */
-        }</p>
+      <p>{}</p>
       </div>
       
       <AC cl={this.state.clear} eraseNum={this.clearEverything} />
-      {/*
-      <AC cl={this.state.clear} eraseNum={this.clearEverything} />
-      */}
       <Backspace removeLastDigit={this.deleteLastDigit}/>
       <Division doOperation={this.attachOperation} />
       
@@ -261,7 +222,7 @@ class App extends React.Component {
       < Button btn={this.state.numbers[8]} buildNum={this.buildNum2} />
       < Button btn={this.state.numbers[9]} buildNum={this.buildNum2} />
       <Multiplication doOperation={this.attachOperation} />
-        {/* < Operator op={this.state.operators[0]} /> */}
+        
      
       < Button btn={this.state.numbers[4]} buildNum={this.buildNum2} />
       < Button btn={this.state.numbers[5]} buildNum={this.buildNum2} />
@@ -272,12 +233,8 @@ class App extends React.Component {
       < Button btn={this.state.numbers[2]} buildNum={this.buildNum2} />
       < Button btn={this.state.numbers[3]} buildNum={this.buildNum2} />
       <Addition doOperation={this.attachOperation} />
-      {/*  < Operator op={this.state.operators[2]} /> */}
       
       < Button btn={this.state.numbers[0]} buildNum={this.buildNum2} />
-{/*
-      < Button btn={this.state.numbers[0]} buildNum={this.buildNum2} />
-*/}
       < Period pd={this.state.period} putPeriod={this.attachPeriod} />
       <Equals performOperation={this.getResult} />
       </div>
@@ -301,7 +258,9 @@ class Button extends React.Component {
   }
 
   render() { 
-    
+    //button is not zero
+    if ( this.props.btn != 0 )
+    {
       return (
       <div><button 
       className="btn btn-primary myButton"
@@ -309,18 +268,20 @@ class Button extends React.Component {
       >
       {this.props.btn}
       </button></div> );
+    }
+    else
+    {
+      return (
+        <div><button 
+        className="btn btn-primary myButton bigger-button"
+        onClick={this.sendData}
+        >
+        {this.props.btn}
+        </button></div> );
+    }
     
   }
 }
-
-/*
-class Operator extends Component {
-  state = {  }
-  render() { 
-    return ( <div><button className="btn btn-secondary" styles={{color: "#000000"}}>{this.props.op}</button></div> );
-  }
-}
-*/
 
 class AC extends Component {
   
@@ -338,7 +299,7 @@ class Period extends Component {
   render() { 
     return ( 
     <div>
-      <button className="btn btn-primary myButton" onClick={this.addPeriod}>
+      <button style={{width: '38px'}} className="btn btn-primary myButton" onClick={this.addPeriod}>
       {this.props.pd}
       </button></div>  );
   }
@@ -416,7 +377,6 @@ class Equals extends Component {
      );
   }
 }
- 
 
 export default App;
 
