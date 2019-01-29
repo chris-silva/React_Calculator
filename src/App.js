@@ -11,13 +11,13 @@ class App extends React.Component {
       processedValue : '',
       numbers : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
       processedStringArray : [],
-      
       clear : "AC",
-      
       period : ".",
       finalValue : null,
       twoOpinArow : false,
-      hasPeriod: false
+      hasPeriod: false,
+
+      setNegative: true
     };
     
   }
@@ -32,7 +32,6 @@ class App extends React.Component {
     this.setState({ 
       trueValue : this.state.trueValue + x,
       displayValue :  this.state.trueValue,
-
       twoOpinArow : false
       
     });
@@ -42,16 +41,27 @@ class App extends React.Component {
     this.setState({
       displayValue : '0',
       trueValue : '',
-      processedStringArray : []
+      processedStringArray : [],
+      setNegative: true
     })
   }
   attachPeriod = () => {
      if(!this.state.trueValue.includes('.'))
      { 
-       this.setState({
-         trueValue : this.state.trueValue + '.',
-         hasPeriod : true 
-        }) 
+       if ( this.state.trueValue === "")
+       {
+          this.setState({
+          trueValue : "0" + this.state.trueValue + '.',
+          hasPeriod : true 
+          })
+       }
+       else
+       {
+          this.setState({
+          trueValue : this.state.trueValue + '.',
+          hasPeriod : true 
+          })
+       } 
      }
   }
 
@@ -72,34 +82,40 @@ class App extends React.Component {
         break;
     }
    
-       if ( this.state.displayValue == '0')
+      //starting displayed zero is used as the first number
+       if ( this.state.displayValue === '0')
         {
-          if (operation != '-')
+          
+          if (operation !== '-')
           {
             this.setState({
             processedStringArray : this.state.processedStringArray.concat('0', operation)
            })
           }
         }
-        else if ( this.state.displayValue ===  "Division by zero" ) { }
-    
+        else if ( this.state.displayValue ===  "Division by zero" )
+        {
+          return;
+        }
+
+
+
         if( !this.state.twoOpinArow )
         {
           if ( !( this.state.trueValue === "") )
           {
-          let myarray = [this.state.trueValue, operation]  
-          this.setState({
-            
+            //no leading zeroes
+            let myarray = [ "" + parseFloat(this.state.trueValue), operation]
+
+            this.setState({
             trueValue : '',
             displayValue : '0',
             processedStringArray : this.state.processedStringArray.concat(myarray),
-
             twoOpinArow : true
             })
           }
-          else if ( this.state.trueValue == "" && operation == '-' )
+          else if ( this.state.trueValue === "" && operation === '-' )
           {
-            //let myarray = [operation];
             this.setState({
             trueValue : '-' + this.state.trueValue,
             twoOpinArow : true
@@ -108,16 +124,31 @@ class App extends React.Component {
         }
         else
         {
-          if ( this.state.trueValue != '-' )
+          //second operation inputted
+          //makes sure the last operation is performed if two operations in a row are inputed
+          if (operation !== '-')
           {
             let tempArray = [...this.state.processedStringArray];
             tempArray.splice( tempArray.length - 1, 1);
             tempArray = [...tempArray, operation];
 
             this.setState({
-            processedStringArray : tempArray
+            processedStringArray : tempArray,
+            trueValue : "",
+            displayValue : "0"
             });
           }
+          //number, operation, then negative sign
+          else
+          {
+            if (this.state.setNegative)
+            this.setState({ 
+              trueValue :  '-' + this.state.trueValue,
+              displayValue :  '-',
+              setNegative : false
+            });
+          }
+          
         }
       }
   countDecimals = (arrayWithDecimals) => {
@@ -129,7 +160,7 @@ class App extends React.Component {
 		  value = arrayWithDecimals[i];
 		  if ( !isNaN(value) )
 		  {
-			  if ((value % 1) != 0)
+			  if ((value % 1) !== 0)
 			  {	
 
 			  	value = value.toString().split(".")[1].length;
@@ -143,19 +174,27 @@ class App extends React.Component {
 
   getResult = () => {
     let result = null;
-    let numberOfDecimals = this.countDecimals(this.state.processedStringArray);
+    let numberOfDecimals;
     
-    if ( this.state.displayValue === "Division by zero" )
+    //if user types number, operation, negative sign, and then the equal button
+    if ( this.state.trueValue === "-" )
+    {
+      return;
+    }
+    else if ( this.state.displayValue === "Division by zero" )
     {
       result = "Division by zero";
     }
-
     //input: number, operation, no input
     else if ( this.state.trueValue === "" )
     {
       if (this.state.hasPeriod)
       {
         result = eval(this.state.processedStringArray.concat("0").join(" ") );
+        
+        //last number is decimal
+        numberOfDecimals = this.countDecimals( [this.state.processedStringArray, this.state.trueValue] );
+
         result = result.toFixed(numberOfDecimals);
         result = "" + result;
       }
@@ -170,12 +209,16 @@ class App extends React.Component {
       if (this.state.hasPeriod)
       {
         result = eval(this.state.processedStringArray.concat(this.state.trueValue).join(" ") );
+
+        //last number is decimal
+        numberOfDecimals = this.countDecimals( [this.state.processedStringArray, this.state.trueValue] );
+
         result = result.toFixed(numberOfDecimals);
         result = "" + result;
       }
       else
       {
-        result = eval(this.state.processedStringArray.concat(this.state.trueValue).join(" ") );
+        result = eval(this.state.processedStringArray.concat("" +  parseFloat(this.state.trueValue)  ).join(" ") );
         result = "" + result;
       }
     }
@@ -188,18 +231,17 @@ class App extends React.Component {
         trueValue : "",
         processedStringArray : [],
         twoOpinArow : true,
-
         hasPeriod : false
       })
     }
     else
     {
-    this.setState ({
+        this.setState ({
         displayValue : result,
         trueValue : "" + result,
         processedStringArray : [],
-
-        hasPeriod : false
+        hasPeriod : false,
+        setNegative : true
       })
    }
   }
@@ -259,7 +301,7 @@ class Button extends React.Component {
 
   render() { 
     //button is not zero
-    if ( this.props.btn != 0 )
+    if ( this.props.btn !== 0 )
     {
       return (
       <div><button 
